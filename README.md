@@ -12,7 +12,7 @@ This repository contains a scalable online technical assessment platform designe
 tech-assessment-platform/
 ├── frontend/       # React frontend for user interaction
 ├── backend/        # FastAPI backend handling API requests, business logic, and database interactions
-├── services/       # Optional Node.js microservices (notifications, PDF generation, etc.)
+├── services/       # microservices (notifications, PDF generation, etc.)
 ├── ai/             # AI / ML pipelines and FAISS integration
 ├── infra/          # Infrastructure and deployment configurations (Docker, Kubernetes, IaC)
 ├── tests/          # End-to-end and integration tests across the platform
