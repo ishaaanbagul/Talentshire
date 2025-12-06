@@ -1,0 +1,11 @@
+{
+  "language": "sql",
+  "files": [
+    {
+      "name": "query",
+      "content": "INSERT INTO numbers VALUES (5, 10); SELECT * FROM numbers;"
+    }
+  ],
+  "stdin": "",
+  "problem_id": "1"
+}

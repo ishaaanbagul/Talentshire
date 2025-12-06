@@ -1,0 +1,11 @@
+{
+  "language": "sql",
+  "files": [
+    {
+      "name": "query",
+      "content": "SELECT a + b FROM numbers;"
+    }
+  ],
+  "stdin": "",
+  "problem_id": "1"
+}

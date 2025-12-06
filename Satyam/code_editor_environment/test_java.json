@@ -1,0 +1,10 @@
+{
+  "language": "java",
+  "files": [
+    {
+      "name": "Main",
+      "content": "public class Main { public static void main(String[] args) { System.out.println(3+5); } }"
+    }
+  ],
+  "stdin": ""
+}

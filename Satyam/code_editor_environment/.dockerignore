@@ -1,0 +1,37 @@
+
+# Dependencies
+node_modules/
+__pycache__/
+.pytest_cache/
+
+# Source control
+.git
+.gitignore
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+README.md
+LINUX_SETUP.md
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore

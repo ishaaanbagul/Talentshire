@@ -1,0 +1,10 @@
+{
+  "language": "sql",
+  "files": [
+    {
+      "name": "query",
+      "content": "CREATE TABLE test (id INT, name TEXT); INSERT INTO test VALUES (1, 'Alice'), (2, 'Bob'); SELECT * FROM test;"
+    }
+  ],
+  "stdin": ""
+}

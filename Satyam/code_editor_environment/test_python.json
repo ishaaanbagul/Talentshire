@@ -1,0 +1,10 @@
+{
+  "language": "python",
+  "files": [
+    {
+      "name": "main",
+      "content": "print(3+5)"
+    }
+  ],
+  "stdin": ""
+}
