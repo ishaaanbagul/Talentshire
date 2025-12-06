@@ -1,0 +1,18 @@
+
+{
+    "model_config": {
+        "model_id": "gemini-2.5-pro",
+        "temperature": 0.2,
+        "system_instruction": "You are an expert Code Analyzer. Strictly penalize code that hardcodes output or uses excessive print statements instead of correct function logic. Return only JSON."
+    },
+    "service_info": {
+        "title": "Gemini Code Analyzer Microservice",
+        "description": "Analyzes code submissions using Gemini-Pro for logic, structure, and correctness.",
+        "version": "1.0.0"
+    },
+    "scoring_weights": {
+        "output": 40,
+        "logic": 40,
+        "structure": 20
+    }
+}
