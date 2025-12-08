@@ -1,8 +1,8 @@
 #schemas.py
 import psycopg
 from pymongo import MongoClient
-from src.config.settings import POSTGRES_DB_NAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, MONGO_URL, MONGO_DB_NAME
-from src.config.logging import setup_logging
+from config.settings import POSTGRES_DB_NAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, MONGO_URL, MONGO_DB_NAME
+from config.logging import setup_logging
 from pymongo.errors import CollectionInvalid
 
 # Initialize logger

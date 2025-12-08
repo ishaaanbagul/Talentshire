@@ -1,7 +1,7 @@
 import csv
 import psycopg
-from src.config.settings import POSTGRES_DB_NAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT
-from src.config.logging import setup_logging
+from config.settings import POSTGRES_DB_NAME, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT
+from config.logging import setup_logging
 
 # initalize logger
 logger = setup_logging()
@@ -19,7 +19,7 @@ def upload_mcq_questions():
         cur = conn.cursor()
 
         # Open and read the CSV file containing MCQ data
-        with open(r"src\upload\mcq_questions.csv", "r") as file:
+        with open(r"C:\Users\ishaan.bagul\OneDrive - Ampcus Tech Pvt Ltd\Desktop\AI driven technical assesment platform\Talentshire\mukesh\mcq_questions.csv", "r") as file:
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
                 # Prepare the data for insertion into the table

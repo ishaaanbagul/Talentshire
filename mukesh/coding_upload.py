@@ -1,7 +1,7 @@
 import json
 from pymongo import MongoClient
-from src.config.settings import MONGO_URL, MONGO_DB_NAME
-from src.config.logging import setup_logging
+from config.settings import MONGO_URL, MONGO_DB_NAME
+from config.logging import setup_logging
 
 # initalize logger
 logger = setup_logging()
@@ -13,7 +13,7 @@ def upload_coding_questions():
     
     try:
         # Load data from the JSON file
-        with open("src/upload/coding_questions_clean.json", "r") as file:
+        with open("mukesh\coding_questions_clean.json", "r") as file:
             coding_data = json.load(file)
         
         # Prepare the data for insertion
