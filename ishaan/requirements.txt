@@ -1,0 +1,32 @@
+# --- Core DB Clients ---
+pymongo==4.6.1
+dnspython==2.6.1
+psycopg[binary]==3.1.18
+ 
+# --- Embedding + Vector Search ---
+sentence-transformers==2.2.0  # (Ensure compatibility with your torch version)
+torch==2.6.0  # (If 2.0.1 is not available, 2.6.0 works well)
+numpy==1.26.4
+faiss-cpu==1.8.0  # (Make sure this matches your system requirements, faiss-gpu if needed)
+ 
+# --- API Framework ---
+fastapi==0.115.5
+starlette==0.41.3
+uvicorn==0.31.0
+ 
+# --- Pydantic ecosystem ---
+pydantic==2.8.2
+pydantic-settings==2.5.2
+ 
+# --- Optional Utilities ---
+pandas==2.2.2
+ 
+ 
+
+
+
+
+
+
+
+#torch==2.2.2+cpu -> install this manually -> pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
