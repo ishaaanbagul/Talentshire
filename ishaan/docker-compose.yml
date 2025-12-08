@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build: .
+    container_name: talentshire_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+      - postgres
+      - elasticsearch
+    environment:
+      MONGO_URL: mongodb://mongo:27017
+      MONGO_DB_NAME: talentshire
+      POSTGRES_DB_NAME: talentshire
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin@123
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      ELASTIC_URL: http://elasticsearch:9200
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_DB: talentshire
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin@123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+volumes:
+  mongo_data:
+  pg_data:
+  es_data:
