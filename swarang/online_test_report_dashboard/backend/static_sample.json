@@ -1,0 +1,110 @@
+{
+  "candidate": {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "id": "CAND123",
+    "exam": "Full Stack Test",
+    "date": "2025-12-06",
+    "duration": "120 minutes"
+  },
+  "mcq": {
+    "max_marks": 50,
+    "marks_obtained": 38,
+    "correct": 19,
+    "wrong": 6,
+    "questions": [
+      {
+        "id": 1,
+        "question": "What is the time complexity of Binary Search?",
+        "options": ["O(n)", "O(log n)", "O(n²)", "O(2ⁿ)"],
+        "correct": "O(log n)",
+        "given_answer": "O(log n)",
+        "is_correct": true,
+        "marks": 2
+      },
+      {
+        "id": 2,
+        "question": "Which of the following is NOT a characteristic of a good API?",
+        "options": ["Easy to understand", "Difficult to implement", "Well documented", "Backward compatible"],
+        "correct": "Difficult to implement",
+        "given_answer": "Difficult to implement",
+        "is_correct": true,
+        "marks": 2
+      },
+      {
+        "id": 3,
+        "question": "What does REST stand for?",
+        "options": ["Representational State Transfer", "Remote Execution System", "Resource Exchange Service Tool", "Real-time Event Streaming"],
+        "correct": "Representational State Transfer",
+        "given_answer": "Representational State Transfer",
+        "is_correct": true,
+        "marks": 2
+      },
+      {
+        "id": 4,
+        "question": "Which HTTP method is used to retrieve data?",
+        "options": ["POST", "PUT", "GET", "DELETE"],
+        "correct": "GET",
+        "given_answer": "POST",
+        "is_correct": false,
+        "marks": 0
+      },
+      {
+        "id": 5,
+        "question": "What is the purpose of a database index?",
+        "options": ["To store data", "To speed up queries", "To validate data", "To compress data"],
+        "correct": "To speed up queries",
+        "given_answer": "To speed up queries",
+        "is_correct": true,
+        "marks": 2
+      }
+    ]
+  },
+  "coding": {
+    "max_marks": 50,
+    "marks_obtained": 42,
+    "output_ok": true,
+    "questions": [
+      {
+        "id": 1,
+        "title": "Implement FizzBuzz",
+        "description": "Write a program that prints numbers from 1 to 100. For multiples of 3, print 'Fizz' instead. For multiples of 5, print 'Buzz'. For multiples of both, print 'FizzBuzz'.",
+        "difficulty": "Easy",
+        "given_answer": "def fizzbuzz(n):\n  for i in range(1, n+1):\n    if i % 15 == 0:\n      print('FizzBuzz')\n    elif i % 3 == 0:\n      print('Fizz')\n    elif i % 5 == 0:\n      print('Buzz')\n    else:\n      print(i)",
+        "marks": 15,
+        "test_cases_passed": 5,
+        "test_cases_total": 5,
+        "output_correct": true
+      },
+      {
+        "id": 2,
+        "title": "Find Two Sum",
+        "description": "Given an array of integers and a target sum, find two numbers that add up to the target.",
+        "difficulty": "Medium",
+        "given_answer": "def two_sum(arr, target):\n  seen = set()\n  for num in arr:\n    if target - num in seen:\n      return [target - num, num]\n    seen.add(num)\n  return None",
+        "marks": 20,
+        "test_cases_passed": 4,
+        "test_cases_total": 5,
+        "output_correct": false
+      },
+      {
+        "id": 3,
+        "title": "Reverse a String",
+        "description": "Write a function to reverse a string without using built-in reverse methods.",
+        "difficulty": "Easy",
+        "given_answer": "def reverse_string(s):\n  return s[::-1]",
+        "marks": 7,
+        "test_cases_passed": 3,
+        "test_cases_total": 3,
+        "output_correct": true
+      }
+    ]
+  },
+  "proctoring": {
+    "flagged_faces": 0,
+    "focus_deviation_percent": 4.5,
+    "cheating_events": 0,
+    "unusual_activity": "None detected"
+  },
+  "include_proctoring": true
+}

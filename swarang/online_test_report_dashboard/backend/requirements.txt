@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+reportlab
+pydantic
+python-multipart
+aiofiles
+pandas
+sqlalchemy
+psycopg2-binary

@@ -1,0 +1,7 @@
+venv
+node_modules
+reports
+dist
+build
+*.pyc
+__pycache__
