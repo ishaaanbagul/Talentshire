@@ -1,0 +1,377 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.editor-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 20px;
+  background: #252526;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.editor-header {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #2d2d30;
+  border-radius: 6px;
+}
+
+.header-controls {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.control-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.control-group label {
+  font-weight: 500;
+  color: #cccccc;
+}
+
+.problem-input,
+.language-select {
+  padding: 8px 12px;
+  background: #3e3e42;
+  border: 1px solid #555;
+  color: #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.problem-input:focus,
+.language-select:focus {
+  outline: none;
+  border-color: #007acc;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.run-btn,
+.submit-btn {
+  padding: 10px 20px;
+  background: #0e639c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.run-btn:hover {
+  background: #1177bb;
+}
+
+.submit-btn {
+  background: #6a9955;
+}
+
+.submit-btn:hover {
+  background: #7aa966;
+}
+
+.run-btn:disabled,
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auto-save-status {
+  padding: 8px 12px;
+  background: #1e7e34;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.problem-info {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #2d2d30;
+  border-left: 4px solid #007acc;
+  border-radius: 6px;
+  color: #cccccc;
+}
+
+.problem-info h3 {
+  color: #4ec9b0;
+  margin-bottom: 10px;
+}
+
+.problem-info p {
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.problem-info pre {
+  background: #1e1e1e;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 12px;
+}
+
+.code-section {
+  margin-bottom: 20px;
+}
+
+.code-section h4 {
+  margin-bottom: 10px;
+  color: #4ec9b0;
+}
+
+.editor-wrapper {
+  border: 1px solid #3e3e42;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.io-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-area,
+.output-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-area h4,
+.output-area h4 {
+  margin-bottom: 10px;
+  color: #4ec9b0;
+}
+
+.input-prompts {
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #2d2d30;
+  border-radius: 4px;
+}
+
+.input-textarea {
+  flex: 1;
+  min-height: 200px;
+  padding: 12px;
+  background: #3e3e42;
+  border: 1px solid #555;
+  color: #e0e0e0;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.input-textarea:focus {
+  outline: none;
+  border-color: #007acc;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.input-hint {
+  margin-top: 8px;
+  color: #888;
+  font-size: 12px;
+}
+
+.output-console {
+  flex: 1;
+  min-height: 200px;
+  padding: 12px;
+  background: #1e1e1e;
+  border: 1px solid #555;
+  color: #d4d4d4;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  overflow: auto;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+@media (max-width: 1200px) {
+  .io-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .control-group {
+    flex-direction: column;
+  }
+
+  .run-btn,
+  .submit-btn {
+    width: 100%;
+  }
+}
+
+/* App Grid Layout */
+.app-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  padding: 20px;
+  background: #1e1e1e;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+}
+
+.app-grid .left {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-grid .right {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Question Panel Styling */
+.question-panel {
+  background: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 8px;
+  padding: 20px;
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 100%;
+  max-width: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.question-panel h2 {
+  color: #4ec9b0;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.question-panel p {
+  color: #d4d4d4;
+  line-height: 1.6;
+  margin: 10px 0;
+}
+
+.question-panel .meta {
+  background: #2d2d30;
+  padding: 10px;
+  border-left: 3px solid #007acc;
+  border-radius: 4px;
+}
+
+.question-panel .labels {
+  background: #2d2d30;
+  padding: 10px;
+  border-left: 3px solid #ce9178;
+  border-radius: 4px;
+}
+
+.question-panel .samples {
+  margin-top: 15px;
+}
+
+.question-panel .samples h4 {
+  color: #4ec9b0;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.question-panel .samples pre {
+  background: #1e1e1e;
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 12px;
+  color: #d4d4d4;
+  border: 1px solid #3e3e42;
+}
+
+.question-panel .loading {
+  text-align: center;
+  color: #888;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+.question-input {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.question-input label {
+  font-weight: 500;
+  color: #cccccc;
+}
+
+.problem-id-input {
+  padding: 8px 12px;
+  background: #3e3e42;
+  border: 1px solid #555;
+  color: #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  flex: 1;
+}
+
+.problem-id-input:focus {
+  outline: none;
+  border-color: #007acc;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+@media (max-width: 1200px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+  }
+}

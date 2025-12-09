@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # Frontend Service (Port 5173)
+  frontend:
+    build: ./frontend
+    container_name: codeplay-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - execution_service
+      - problem_service
+      - submission_service
+    networks:
+      - microservices
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Code Execution Microservice (Port 8001)
+  # Supports: Python, Java, SQL, PySpark
+  execution_service:
+    build: ./services/execution_service
+    container_name: execution-service
+    ports:
+      - "8001:8001"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/codeplay
+    depends_on:
+      - mongodb
+    networks:
+      - microservices
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Problem Fetching Microservice (Port 8002)
+  # Returns: id, title, description, difficulty, labels, sample_input, sample_output, constraints
+  problem_service:
+    build: ./services/problem_service
+    container_name: problem-service
+    ports:
+      - "8002:8002"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/codeplay
+    depends_on:
+      - mongodb
+    networks:
+      - microservices
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Submission Storage Microservice (Port 8003)
+  # Endpoints: POST /submission, GET /submissions/{user_id}
+  submission_service:
+    build: ./services/submission_service
+    container_name: submission-service
+    ports:
+      - "8003:8003"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/codeplay
+      POSTGRES_HOST: postgresql
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: codeplay_user
+      POSTGRES_PASSWORD: codeplay_password
+      POSTGRES_DB: codeplay_db
+    depends_on:
+      - mongodb
+      - postgresql
+    networks:
+      - microservices
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:latest
+    container_name: codeplay-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DB: codeplay
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - microservices
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database (Port 5432)
+  # Stores: test_answer table for candidate submissions
+  postgresql:
+    image: postgres:15-alpine
+    container_name: codeplay-postgresql
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: codeplay_user
+      POSTGRES_PASSWORD: codeplay_password
+      POSTGRES_DB: codeplay_db
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./services/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codeplay_user"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  microservices:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  postgresql_data:
+    driver: local
