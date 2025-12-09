@@ -128,6 +128,24 @@ def generate_pdf_report(data, out_path):
     cand = data.get('candidate', {})
     mcq = data.get('mcq', {})
     coding = data.get('coding', {})
+    # Filter to only completed/attempted questions for display
+    def _mcq_completed(q):
+        # MCQ considered completed when a non-empty given_answer exists
+        return bool(q.get('given_answer'))
+
+    def _coding_completed(q):
+        # Coding considered completed when either given_answer exists (non-empty),
+        # or output_correct is True/False (indicates attempted), or some test cases ran
+        if q.get('given_answer'):
+            return True
+        if q.get('output_correct') is not None:
+            return True
+        if q.get('test_cases_passed'):
+            try:
+                return int(q.get('test_cases_passed')) > 0
+            except Exception:
+                return False
+        return False
     
     # Helper function
     def pct_str(obt, mx):
@@ -195,17 +213,41 @@ def generate_pdf_report(data, out_path):
     story.append(Spacer(1, 6))
     
     # ========== VISUAL REPORT ==========
+    # Filter question lists to only include completed ones for display
+    mcq_questions = [q for q in (mcq.get('questions') or []) if _mcq_completed(q)]
+    coding_questions = [q for q in (coding.get('questions') or []) if _coding_completed(q)]
+
+    # Check which sections have data (considering completed questions)
+    has_mcq = (mcq.get('max_marks', 0) > 0) or bool(mcq_questions)
+    has_coding = (coding.get('max_marks', 0) > 0) or bool(coding_questions)
+    
     total_marks = mcq.get('max_marks', 0) + coding.get('max_marks', 0)
     total_obtained = mcq.get('marks_obtained', 0) + coding.get('marks_obtained', 0)
     total_pct = pct_str(total_obtained, total_marks)
 
-    # Scores summary table
-    scores = [
-        ["Section", "Max Marks", "Marks Obtained", "Percentage"],
-        ["MCQ", str(mcq.get('max_marks', 0)), str(mcq.get('marks_obtained', 0)), pct_str(mcq.get('marks_obtained', 0), mcq.get('max_marks', 1))],
-        ["Coding", str(coding.get('max_marks', 0)), str(coding.get('marks_obtained', 0)), pct_str(coding.get('marks_obtained', 0), coding.get('max_marks', 1))],
-        ["TOTAL", str(total_marks), str(total_obtained), total_pct]
-    ]
+    # Build scores summary table dynamically based on available sections
+    scores = [["Section", "Max Marks", "Marks Obtained", "Percentage"]]
+    
+    if has_mcq:
+        scores.append(["MCQ", str(mcq.get('max_marks', 0)), str(mcq.get('marks_obtained', 0)), pct_str(mcq.get('marks_obtained', 0), mcq.get('max_marks', 1))])
+    
+    if has_coding:
+        # For coding: show attempt percentage if max_marks is 0, otherwise show marks
+        if coding.get('max_marks', 0) == 0:
+            if coding_questions:
+                attempted = sum(1 for q in coding_questions)
+                total_coding = len(coding.get('questions') or [])
+                attempt_pct = (attempted / total_coding * 100) if total_coding > 0 else 0
+                scores.append(["Coding", str(total_coding), f"{attempted} attempted", f"{attempt_pct:.2f}%"])
+            else:
+                total_coding = len(coding.get('questions') or [])
+                scores.append(["Coding", str(total_coding), "0 attempted", "0.00%"])
+        else:
+            scores.append(["Coding", str(coding.get('max_marks', 0)), str(coding.get('marks_obtained', 0)), pct_str(coding.get('marks_obtained', 0), coding.get('max_marks', 1))])
+    
+    # Only add TOTAL row if we have at least one section
+    if has_mcq or has_coding:
+        scores.append(["TOTAL", str(total_marks), str(total_obtained), total_pct])
     # Scores table with proper spacing
     st = Table(scores, colWidths=[45*mm, 45*mm, 45*mm, 45*mm])
     st.setStyle(TableStyle([
@@ -228,9 +270,42 @@ def generate_pdf_report(data, out_path):
     story.append(Spacer(1, 20))  # Increased spacing between table and charts
 
     # ========== CHARTS (Professional layout with proper spacing) ==========
-    # Create clean charts without overlapping labels
-    mcq_chart = _create_pie_chart("MCQ", mcq.get('marks_obtained', 0), mcq.get('max_marks', 1), color_hex='#2d5a87')
-    coding_chart = _create_pie_chart("Coding", coding.get('marks_obtained', 0), coding.get('max_marks', 1), color_hex='#0ea5e9')
+    # Create clean charts without overlapping labels - only for sections that exist
+    charts_to_show = []
+    labels_to_show = []
+    chart_widths = []
+    
+    if has_mcq:
+        mcq_chart = _create_pie_chart("MCQ", mcq.get('marks_obtained', 0), mcq.get('max_marks', 1), color_hex='#2d5a87')
+        mcq_pct = pct_str(mcq.get('marks_obtained', 0), mcq.get('max_marks', 1))
+        mcq_label_text = f"<b style='font-size:10'>{mcq_pct}</b><br/><font size='7' color='{TEXT_LIGHT}'>MCQ Section</font><br/><font size='6'>{mcq.get('marks_obtained',0)} / {mcq.get('max_marks',0)} marks</font>"
+        mcq_label = Paragraph(mcq_label_text, label_style)
+        charts_to_show.append(mcq_chart)
+        labels_to_show.append(mcq_label)
+        chart_widths.append(60*mm)
+    
+    if has_coding:
+        # For coding without marks, show attempted percentage
+        if coding.get('max_marks', 0) == 0:
+            coding_questions = coding.get('questions', [])
+            if coding_questions:
+                attempted = sum(1 for q in coding_questions if q.get('given_answer') or q.get('output_correct') is not None)
+                total_coding = len(coding_questions)
+                coding_chart = _create_pie_chart("Coding", attempted, total_coding, color_hex='#0ea5e9')
+                attempt_pct = (attempted / total_coding * 100) if total_coding > 0 else 0
+                coding_label_text = f"<b style='font-size:10'>{attempt_pct:.2f}%</b><br/><font size='7' color='{TEXT_LIGHT}'>Coding Attempted</font><br/><font size='6'>{attempted} / {total_coding} questions</font>"
+            else:
+                coding_chart = _create_pie_chart("Coding", 0, 1, color_hex='#0ea5e9')
+                coding_label_text = f"<b style='font-size:10'>0.00%</b><br/><font size='7' color='{TEXT_LIGHT}'>Coding Attempted</font><br/><font size='6'>0 / 0 questions</font>"
+        else:
+            coding_chart = _create_pie_chart("Coding", coding.get('marks_obtained', 0), coding.get('max_marks', 1), color_hex='#0ea5e9')
+            coding_pct = pct_str(coding.get('marks_obtained', 0), coding.get('max_marks', 1))
+            coding_label_text = f"<b style='font-size:10'>{coding_pct}</b><br/><font size='7' color='{TEXT_LIGHT}'>Coding Section</font><br/><font size='6'>{coding.get('marks_obtained',0)} / {coding.get('max_marks',0)} marks</font>"
+        
+        coding_label = Paragraph(coding_label_text, label_style)
+        charts_to_show.append(coding_chart)
+        labels_to_show.append(coding_label)
+        chart_widths.append(60*mm)
     
     # Calculate proctoring compliance score (100 - focus deviation = compliance)
     proctoring_data = data.get('proctoring', {}) or {}
@@ -245,71 +320,53 @@ def generate_pdf_report(data, out_path):
         proctoring_pct = f"{compliance_score:.1f}%"
         proctoring_label_text = f"<b style='font-size:10'>{proctoring_pct}</b><br/><font size='7' color='{TEXT_LIGHT}'>Compliance</font><br/><font size='6'>Deviation: {focus_deviation:.1f}%</font>"
         proctoring_label = Paragraph(proctoring_label_text, label_style)
-    else:
-        # Don't create chart or label if proctoring is disabled
-        proctoring_chart = Drawing(0, 0)  # Empty drawing with 0 size
-        proctoring_label = Paragraph("", label_style)  # Empty paragraph instead of None
+        charts_to_show.append(proctoring_chart)
+        labels_to_show.append(proctoring_label)
+        chart_widths.append(60*mm)
+    
+    # Build chart table based on number of sections
+    if charts_to_show:
+        chart_rows = [charts_to_show, [Spacer(1, 8) for _ in charts_to_show], labels_to_show]
+        chart_table = Table(chart_rows, colWidths=chart_widths, rowHeights=[32*mm, 5*mm, 18*mm])
+        
+        chart_table.setStyle(TableStyle([
+            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+            ('VALIGN',(0,0),(-1,0),'MIDDLE'),  # Charts centered vertically
+            ('VALIGN',(0,2),(-1,2),'TOP'),     # Labels aligned to top
+            ('LEFTPADDING',(0,0),(-1,-1),3),
+            ('RIGHTPADDING',(0,0),(-1,-1),3),
+            ('TOPPADDING',(0,0),(-1,0),6),     # Increased top padding for charts
+            ('BOTTOMPADDING',(0,0),(-1,0),6),  # Increased bottom padding for charts
+            ('TOPPADDING',(0,2),(-1,2),2),     # Increased top padding for labels
+        ]))
+        
+        story.append(chart_table)
+        story.append(Spacer(1, 12))  # Increased spacing after charts
 
-    # Professional labels with clear spacing - no overlapping
-    mcq_pct = pct_str(mcq.get('marks_obtained', 0), mcq.get('max_marks', 1))
-    coding_pct = pct_str(coding.get('marks_obtained', 0), coding.get('max_marks', 1))
-    
-    # Create label paragraphs with proper spacing and hierarchy
-    mcq_label_text = f"<b style='font-size:10'>{mcq_pct}</b><br/><font size='7' color='{TEXT_LIGHT}'>MCQ Section</font><br/><font size='6'>{mcq.get('marks_obtained',0)} / {mcq.get('max_marks',0)} marks</font>"
-    coding_label_text = f"<b style='font-size:10'>{coding_pct}</b><br/><font size='7' color='{TEXT_LIGHT}'>Coding Section</font><br/><font size='6'>{coding.get('marks_obtained',0)} / {coding.get('max_marks',0)} marks</font>"
-    
-    mcq_label = Paragraph(mcq_label_text, label_style)
-    coding_label = Paragraph(coding_label_text, label_style)
-
-    # Build chart table based on whether proctoring is included
-    if include_proctoring:
-        # 3-column layout with proctoring
-        chart_table = Table([
-            [mcq_chart, coding_chart, proctoring_chart],
-            [Spacer(1, 8), Spacer(1, 8), Spacer(1, 8)],  # Increased spacer row for breathing room
-            [mcq_label, coding_label, proctoring_label]
-        ], colWidths=[60*mm, 60*mm, 60*mm], rowHeights=[32*mm, 5*mm, 18*mm])  # Increased spacer and label row heights
-    else:
-        # 2-column layout without proctoring
-        chart_table = Table([
-            [mcq_chart, coding_chart],
-            [Spacer(1, 8), Spacer(1, 8)],  # Spacer row for breathing room
-            [mcq_label, coding_label]
-        ], colWidths=[60*mm, 60*mm], rowHeights=[32*mm, 5*mm, 18*mm])
-    
-    chart_table.setStyle(TableStyle([
-        ('ALIGN',(0,0),(-1,-1),'CENTER'),
-        ('VALIGN',(0,0),(-1,0),'MIDDLE'),  # Charts centered vertically
-        ('VALIGN',(0,2),(-1,2),'TOP'),     # Labels aligned to top
-        ('LEFTPADDING',(0,0),(-1,-1),3),
-        ('RIGHTPADDING',(0,0),(-1,-1),3),
-        ('TOPPADDING',(0,0),(-1,0),6),     # Increased top padding for charts
-        ('BOTTOMPADDING',(0,0),(-1,0),6),  # Increased bottom padding for charts
-        ('TOPPADDING',(0,2),(-1,2),2),     # Increased top padding for labels
-    ]))
-    
-    story.append(chart_table)
-    story.append(Spacer(1, 12))  # Increased spacing after charts
-
-    # Add coding questions section (compact format)
-    if coding.get('questions'):
+    # Add coding questions section (compact format) - show only completed questions
+    if coding_questions:
         story.append(Spacer(1, 4))  # Extra space before questions section
         story.append(Paragraph("CODING QUESTIONS", heading_style))
-        for i, q in enumerate(coding.get('questions', []), 1):
-            # Header with title, difficulty, marks, and status in one line
-            status_icon = "✓" if q.get('output_correct') else "✗"
-            status_color = SUCCESS_COLOR if q.get('output_correct') else DANGER_COLOR
-            header_text = f"<b>Q{q.get('id', i)}: {q.get('title', '')}</b> | <i>{q.get('difficulty', 'N/A')}</i> | Marks: {q.get('marks', 0)} | <font color='{status_color}'>{status_icon}</font>"
+        for i, q in enumerate(coding_questions, 1):
+            # Determine status based on available data
+            has_answer = bool(q.get('given_answer')) or q.get('output_correct') is not None
+            output_correct = q.get('output_correct', False)
+            status_icon = "✓" if output_correct else "✗" if has_answer else "○"
+            status_color = SUCCESS_COLOR if output_correct else DANGER_COLOR if has_answer else TEXT_LIGHT
+
+            # Build header with title, difficulty, marks (if available), and status
+            marks_text = f" | Marks: {q.get('marks', 0)}" if q.get('marks', 0) > 0 else ""
+            header_text = f"<b>Q{q.get('id', i)}: {q.get('title', '')}</b> | <i>{q.get('difficulty', 'N/A')}</i>{marks_text} | <font color='{status_color}'>{status_icon}</font>"
             story.append(Paragraph(header_text, normal_style))
             story.append(Spacer(1, 3))
-            
+
             # Description (compact)
             desc_text = q.get('description', '')
             if len(desc_text) > 200:
                 desc_text = desc_text[:200] + "..."
             story.append(Paragraph(f"<b>Desc:</b> {desc_text}", normal_style))
             story.append(Spacer(1, 3))
-            
+
             # Solution code (compact, truncated if too long)
             code_text = q.get('given_answer', '').replace('<', '&lt;').replace('>', '&gt;')
             # Truncate very long code solutions
@@ -318,19 +375,26 @@ def generate_pdf_report(data, out_path):
             story.append(Paragraph(f"<b>Solution:</b>", normal_style))
             story.append(Spacer(1, 2))
             story.append(Paragraph(f"<font name='Courier' size='6'><pre>{code_text}</pre></font>", normal_style))
+
+            # Add test case information if available
+            if q.get('test_cases_passed') is not None and q.get('test_cases_total') is not None:
+                test_info = f"<font size='7' color='{TEXT_LIGHT}'>Test Cases: {q.get('test_cases_passed', 0)} / {q.get('test_cases_total', 0)} passed</font>"
+                story.append(Paragraph(test_info, normal_style))
+
             story.append(Spacer(1, 6))
 
-    # Add MCQ questions section (compact format)
-    if mcq.get('questions'):
+    # Add MCQ questions section (compact format) - include only completed questions
+    if mcq_questions:
         story.append(Paragraph("MCQ QUESTIONS", heading_style))
-        for i, q in enumerate(mcq.get('questions', []), 1):
+        for i, q in enumerate(mcq_questions, 1):
             # Question with status and marks in header
             status_icon = "✓" if q.get('is_correct') else "✗"
             status_color = SUCCESS_COLOR if q.get('is_correct') else DANGER_COLOR
-            question_text = f"<b>Q{q.get('id', i)}:</b> {q.get('question', '')} | <font color='{status_color}'>{status_icon}</font> | Marks: {q.get('marks', 0)}"
+            marks_info = f" | Marks: {q.get('marks', 0)}" if q.get('marks') else ""
+            question_text = f"<b>Q{q.get('id', i)}:</b> {q.get('question', '')} | <font color='{status_color}'>{status_icon}</font>{marks_info}"
             story.append(Paragraph(question_text, normal_style))
             story.append(Spacer(1, 3))
-            
+
             # Options in compact table
             options_data = []
             for idx, opt in enumerate(q.get('options', []), 1):
