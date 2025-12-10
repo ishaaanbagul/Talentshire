@@ -19,7 +19,7 @@ def upload_mcq_questions():
         cur = conn.cursor()
 
         # Open and read the CSV file containing MCQ data
-        with open(r"C:\Users\ishaan.bagul\OneDrive - Ampcus Tech Pvt Ltd\Desktop\AI driven technical assesment platform\Talentshire\mukesh\mcq_questions.csv", "r") as file:
+        with open(r"mcq_questions.csv", "r") as file:
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
                 # Prepare the data for insertion into the table
