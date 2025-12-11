@@ -1,11 +1,3 @@
-"""
-1. Service for Storing Test Information -> ishaan
-Table                         Key Columns
-tests                    test_id, test_name, created_by (FK→users), duration_minutes, status (enum)
-test_questions     id, test_id (FK), question_id (FK), question_type (enum), order_index
-"""
-
-
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base, Session
@@ -16,9 +8,9 @@ import enum
 # Initialize FastAPI app
 app = FastAPI()
 
-# Database URL and Engine
-DATABASE_URL = "sqlite:///./test.db"  # Adjust for your DB
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+# Database URL and Engine (PostgreSQL)
+DATABASE_URL = "postgresql://postgres:admin@123@localhost:5432/talentshire"  
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -40,6 +32,9 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
 
+    # Added the reverse relationship for the back_populate with tests
+    tests = relationship("Test", back_populates="created_by_user")
+
 class Test(Base):
     __tablename__ = "tests"
     test_id = Column(Integer, primary_key=True, index=True)
@@ -48,7 +43,9 @@ class Test(Base):
     duration_minutes = Column(Integer)
     status = Column(Enum(TestStatusEnum))
 
+    # Relationship
     created_by_user = relationship("User", back_populates="tests")
+    questions = relationship("TestQuestion", back_populates="test")
 
 class TestQuestion(Base):
     __tablename__ = "test_questions"
@@ -58,11 +55,8 @@ class TestQuestion(Base):
     question_type = Column(Enum(QuestionTypeEnum))
     order_index = Column(Integer)
 
+    # Relationship
     test = relationship("Test", back_populates="questions")
-
-# Relationships
-User.tests = relationship("Test", back_populates="created_by_user")
-Test.questions = relationship("TestQuestion", back_populates="test")
 
 # Pydantic Schemas for Validation
 
@@ -150,5 +144,5 @@ def get_tests_endpoint(skip: int = 0, limit: int = 100, db: Session = Depends(ge
 def get_test_questions_endpoint(test_id: int, db: Session = Depends(get_db)):
     return get_test_questions(db=db, test_id=test_id)
 
-# Database Setup (without creating tables, assuming they already exist)
+# Database Setup (Create tables if not already created)
 Base.metadata.create_all(bind=engine)
