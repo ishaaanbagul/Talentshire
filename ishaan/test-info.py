@@ -9,7 +9,8 @@ import enum
 app = FastAPI()
 
 # Database URL and Engine (PostgreSQL)
-DATABASE_URL = "postgresql://postgres:admin@123@localhost:5432/talentshire"  
+#DATABASE_URL = "postgresql://postgres:admin@123@localhost:5432/talentshire"  
+DATABASE_URL = "postgresql://postgres:admin%40123@localhost:5432/talentshire"  
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
